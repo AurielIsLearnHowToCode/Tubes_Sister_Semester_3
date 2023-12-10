@@ -5,10 +5,10 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 
-#define PH_PIN 32
-#define PUMP_UP_PIN 5
-#define PUMP_DOWN_PIN 18  
-#define WATER_LEVEL_PIN 39
+#define PH_PIN 35
+#define PUMP_UP_PIN 18
+#define PUMP_DOWN_PIN 5  
+#define WATER_LEVEL_PIN 34
 
 Adafruit_ADS1015 ads;  // Objek untuk ADS1115 (analog-to-digital converter)
 
@@ -55,10 +55,10 @@ void loop() {
   // Kontrol pH secara otomatis
   if (phValue < 6.5) {
     pumpDown();  // Kontrol pH down
-    sendTelegramMessage("pH level is too low, adding pH up. \n (pH level terlalu rendah, menambahkan pH up.)");
+    sendTelegramMessage("pH level terlalu rendah, menambahkan pH up.");
   } else if (phValue > 7.5) {
     pumpUp();    // Kontrol pH up
-    sendTelegramMessage("pH level is too high, adding pH down. \n (pH level terlalu tinggi, menambahkan pH down.)");
+    sendTelegramMessage("pH level terlalu tinggi, menambahkan pH down.");
   }
 
   // Peringatkan jika tingkat air rendah
@@ -100,6 +100,7 @@ void sendTelegramMessage(const char *message) {
                "&text=" + String(message);
   http.begin(url);
   int httpCode = http.GET();
+
   if (httpCode > 0) {
     Serial.println("Telegram message sent successfully.");
   } else {
