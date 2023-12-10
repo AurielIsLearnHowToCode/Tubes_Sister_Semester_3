@@ -5,10 +5,10 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 
-#define PH_PIN A13
+#define PH_PIN 32
 #define PUMP_UP_PIN 5
 #define PUMP_DOWN_PIN 18  
-#define WATER_LEVEL_PIN A12
+#define WATER_LEVEL_PIN 39
 
 Adafruit_ADS1015 ads;  // Objek untuk ADS1115 (analog-to-digital converter)
 
@@ -16,8 +16,8 @@ const float PH4 = 1.7;
 const float PH7 = 1.2;
 const int WATER_LEVEL_THRESHOLD = 500;  // Nilai ambang untuk tingkat air rendah
 
-const char *ssid = "PAK MIYAS";
-const char *password = "miyas1957";
+const char *ssid = "Test";
+const char *password = "ALAMANDA1";
 const char *telegramBotToken = "6921611133:AAH9P1LSv8nToyo8UmXfcJuzav3ouVM82pY";
 const long chatId = 1774969820;
 
@@ -30,7 +30,6 @@ void sendTelegramMessage(const char *message);
 
 void setup() {
   Serial.begin(9600);
-  pinMode(PH_PIN, INPUT);
   pinMode(PUMP_UP_PIN, OUTPUT);
   pinMode(PUMP_DOWN_PIN, OUTPUT);
 
@@ -56,10 +55,10 @@ void loop() {
   // Kontrol pH secara otomatis
   if (phValue < 6.5) {
     pumpDown();  // Kontrol pH down
-    sendTelegramMessage("pH level is too low, adding pH up.");
+    sendTelegramMessage("pH level is too low, adding pH up. \n (pH level terlalu rendah, menambahkan pH up.)");
   } else if (phValue > 7.5) {
     pumpUp();    // Kontrol pH up
-    sendTelegramMessage("pH level is too high, adding pH down.");
+    sendTelegramMessage("pH level is too high, adding pH down. \n (pH level terlalu tinggi, menambahkan pH down.)");
   }
 
   // Peringatkan jika tingkat air rendah
@@ -108,3 +107,21 @@ void sendTelegramMessage(const char *message) {
   }
   http.end();
 }
+
+
+// Platform.ini
+// [env:esp32doit-devkit-v1]
+// platform = espressif32
+// board = esp32doit-devkit-v1
+// framework = arduino
+
+// build_flags = 
+//     -DCORE_DEBUG_LEVEL=3
+//     -DCONFIG_ARDUHAL_LOG_COLORS=1
+
+// monitor_filters = direct
+
+// lib_deps =
+//    adafruit/Adafruit ADS1X15@^1.0.2
+//    adafruit/Adafruit Unified Sensor@^1.1.4
+//    esp32-http-client
