@@ -4,20 +4,25 @@
 #include <Adafruit_ADS1015.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
+#include <WString.h>
 
 #define PH_PIN 35
 #define PUMP_UP_PIN 18
-#define PUMP_DOWN_PIN 5  
+#define PUMP_DOWN_PIN 5
 #define WATER_LEVEL_PIN 34
 
 Adafruit_ADS1015 ads;  // Objek untuk ADS1115 (analog-to-digital converter)
 
-const float PH4 = 1.7;
-const float PH7 = 1.2;
+float calibration = 0.00; //change this value to calibrate
+int sensorValue = 0;
+unsigned long int avgValue;
+float b;
+int buf[10], temp;
+
 const int WATER_LEVEL_THRESHOLD = 500;  // Nilai ambang untuk tingkat air rendah
 
-const char *ssid = "Test";
-const char *password = "ALAMANDA1";
+const char *ssid = "ayam";
+const char *password = "kudakuda";
 const char *telegramBotToken = "6921611133:AAH9P1LSv8nToyo8UmXfcJuzav3ouVM82pY";
 const long chatId = 1774969820;
 
@@ -70,10 +75,31 @@ void loop() {
 }
 
 float readPH() {
-  int rawValue = analogRead(PH_PIN);
-  float voltage = rawValue * (5.0 / 1024.0);
-  float pH = 7.0 + ((PH7 - voltage) / ((PH7 - PH4) / 3.0));
-  return pH;
+  for(int i = 0 ; i < 10 ; i++){
+    buf[i]=analogRead(PH_PIN);
+    delay(30);
+  }
+  
+  for(int i = 0 ; i < 9 ; i++){
+    for(int j = i + 1 ; j < 10 ; j++){
+      if(buf[i]>buf[j]){
+        temp=buf[i];
+        buf[i]=buf[j];
+        buf[j]=temp;
+      }
+    }
+  }
+  avgValue=0;
+
+  for(int i = 2 ; i < 8 ; i++)
+  avgValue+=buf[i];
+  float pHVol= (float)avgValue * 5.0 / 1024 / 6;
+  float phValue = -5.70 * pHVol + calibration;
+  Serial.print("sensor = ");
+  Serial.println(phValue);
+  delay(500);
+
+  return phValue;
 }
 
 int readWaterLevel() {
@@ -82,15 +108,20 @@ int readWaterLevel() {
 }
 
 void pumpUp() {
-  digitalWrite(PUMP_UP_PIN, HIGH);
-  delay(5000);  // Pompa dijalankan selama 5 detik, disesuaikan sesuai kebutuhan
   digitalWrite(PUMP_UP_PIN, LOW);
+  Serial.println("PING----");
+  delay(5000);  // Pompa dijalankan selama 5 detik, disesuaikan sesuai kebutuhan
+  digitalWrite(PUMP_UP_PIN, HIGH);
+  Serial.println("PONG----");
 }
 
 void pumpDown() {
-  digitalWrite(PUMP_DOWN_PIN, HIGH);
-  delay(5000);  // Pompa dijalankan selama 5 detik, disesuaikan sesuai kebutuhan
   digitalWrite(PUMP_DOWN_PIN, LOW);
+  Serial.println("PING----");
+  delay(5000);  // Pompa dijalankan selama 5 detik, disesuaikan sesuai kebutuhan
+  digitalWrite(PUMP_DOWN_PIN, HIGH);
+  Serial.println("PONG----");
+
 }
 
 void sendTelegramMessage(const char *message) {
